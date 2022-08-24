@@ -8,12 +8,20 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class TopicBuilderConfig {
+
+    @Value("${kafka_topic}")
+    private String kafkaTopic;
+
+    @Value("${partitions_count}")
+    private String partitionsCount;
 	
 
     @Bean
     public NewTopic dthTopic() {
     	// if partion's are added, then works will be shared across each consumer.
     	//  return TopicBuilder.name("dthSubscription").partitions(3).replicas(3).build();
-        return TopicBuilder.name("subscribe").build();
+        int count = Integer.parseInt(partitionsCount);
+
+        return TopicBuilder.name(kafkaTopic).partitions(count).build();
     }
 }

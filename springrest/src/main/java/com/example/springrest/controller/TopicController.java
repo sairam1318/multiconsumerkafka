@@ -39,10 +39,9 @@ public class TopicController {
 	TopicProducer topicProducer;
 	
 	@PostMapping("/sendMessge")
-	public void sendMessageToTopic(@RequestBody TopicMessage msg) {
-		
-		for(int counter = 0; counter < 500; counter ++ ) {
-			topicProducer.sendMessage(msg.getMessage() + " (" + counter + ")");
+	public void sendMessageToTopic(@RequestBody TopicMessage msg) throws InterruptedException {
+		for(int counter = 0; counter < 100000; counter ++ ) {
+			topicProducer.sendMessage(msg.getMessage() + " ( " + counter + " )");
 		}
 		
 	}

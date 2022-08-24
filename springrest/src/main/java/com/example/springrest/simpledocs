@@ -1,0 +1,174 @@
+Use KafkaTemplate to send messages.
+The KafkaTemplate wraps a producer and provides convenience methods to send data to Kafka topics.
+
+The API takes in a timestamp as a parameter and stores this timestamp in the record.
+ How the user-provided timestamp is stored depends on the timestamp type configured on the Kafka topic. 
+ 
+ 	If the topic is configured to use CREATE_TIME, the user specified timestamp is recorded (or generated if not specified). 
+ 	If the topic is configured to use LOG_APPEND_TIME, the user-specified timestamp is ignored and the broker adds in the local broker time.
+ 	
+ 	
+
+Starting with version 2.5, you can use a `RoutingKafkaTemplate` to select the producer at runtime, 
+based on the destination topic name.
+
+
+  ```  
+  	@Bean
+    public RoutingKafkaTemplate routingTemplate(GenericApplicationContext context,
+            ProducerFactory<Object, Object> pf) {
+
+        // Clone the PF with a different Serializer, register with Spring for shutdown
+        Map<String, Object> configs = new HashMap<>(pf.getConfigurationProperties());
+        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class);
+        DefaultKafkaProducerFactory<Object, Object> bytesPF = new DefaultKafkaProducerFactory<>(configs);
+        context.registerBean(DefaultKafkaProducerFactory.class, "bytesPF", bytesPF);
+
+        Map<Pattern, ProducerFactory<Object, Object>> map = new LinkedHashMap<>();
+        map.put(Pattern.compile("two"), bytesPF);
+        map.put(Pattern.compile(".+"), pf); // Default PF with StringSerializer
+        return new RoutingKafkaTemplate(map);
+    }
+  ```
+  
+For example, container.setConcurrency(3) creates three KafkaMessageListenerContainer instances.
+  
+  
+  
+Explicit Partition Assignment
+
+	@KafkaListener(id = "thing2", topicPartitions =
+	        { @TopicPartition(topic = "topic1", partitions = { "0", "1" }),
+	          @TopicPartition(topic = "topic2", partitions = "0",
+	             partitionOffsets = @PartitionOffset(partition = "1", initialOffset = "100"))
+	        })
+	public void listen(ConsumerRecord<?, ?> record) {
+	    ...
+	}
+	
+	You can specify each partition in the partitions or partitionOffsets attribute but not both.
+
+
+The following example shows how to use the headers:
+
+	@KafkaListener(id = "qux", topicPattern = "myTopic1")
+	public void listen(@Payload String foo,
+	        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) Integer key,
+	        @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
+	        @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
+	        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) long ts
+	        ) {
+	    ...
+	}
+
+	Starting with version 2.5, instead of using discrete headers, you can receive record metadata in a ConsumerRecordMetadata parameter.
+	
+	@KafkaListener(...)
+	public void listen(String str, ConsumerRecordMetadata meta) {
+    	...
+	}
+
+
+add a Validator to validate @KafkaListener @Payload
+
+@Configuration
+@EnableKafka
+public class Config implements KafkaListenerConfigurer {
+
+    ...
+
+    @Override
+    public void configureKafkaListeners(KafkaListenerEndpointRegistrar registrar) {
+      registrar.setValidator(new MyValidator());
+    }
+
+}
+
+//
+
+In certain scenarios, such as rebalancing, a message that has already been processed may be redelivered. 
+The framework cannot know whether such a message has been processed or not. 
+That is an application-level function. This is known as the Idempotent Receiver pattern and Spring Integration provides an implementation of it.
+
+
+// In order to seek, your listener must implement ConsumerSeekAware, which has the following methods:
+
+@Component
+class Listener implements ConsumerSeekAware {
+
+    private static final Logger logger = LoggerFactory.getLogger(Listener.class);
+
+    private final ThreadLocal<ConsumerSeekCallback> callbackForThread = new ThreadLocal<>();
+
+    private final Map<TopicPartition, ConsumerSeekCallback> callbacks = new ConcurrentHashMap<>();
+
+    @Override
+    public void registerSeekCallback(ConsumerSeekCallback callback) {
+        this.callbackForThread.set(callback);
+    }
+
+    @Override
+    public void onPartitionsAssigned(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+        assignments.keySet().forEach(tp -> this.callbacks.put(tp, this.callbackForThread.get()));
+    }
+
+    @Override
+    public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
+        partitions.forEach(tp -> this.callbacks.remove(tp));
+        this.callbackForThread.remove();
+    }
+
+    @Override
+    public void onIdleContainer(Map<TopicPartition, Long> assignments, ConsumerSeekCallback callback) {
+    }
+
+    @KafkaListener(id = "seekExample", topics = "seekExample", concurrency = "3")
+    public void listen(ConsumerRecord<String, String> in) {
+        logger.info(in.toString());
+    }
+
+    public void seekToStart() {
+        this.callbacks.forEach((tp, callback) -> callback.seekToBeginning(tp.topic(), tp.partition()));
+    }
+
+}
+
+// pause and resume topics
+
+ @Bean
+    public ApplicationRunner runner(KafkaListenerEndpointRegistry registry,
+            KafkaTemplate<String, String> template) {
+        return args -> {
+            template.send("pause.resume.topic", "thing1");
+            Thread.sleep(10_000);
+            System.out.println("pausing");
+            registry.getListenerContainer("pause.resume").pause();
+            Thread.sleep(10_000);
+            template.send("pause.resume.topic", "thing2");
+            Thread.sleep(10_000);
+            System.out.println("resuming");
+            registry.getListenerContainer("pause.resume").resume();
+            Thread.sleep(10_000);
+        };
+    }
+
+    @KafkaListener(id = "pause.resume", topics = "pause.resume.topic")
+    public void listen(String in) {
+        System.out.println(in);
+    }
+
+    @Bean
+    public NewTopic topic() {
+        return TopicBuilder.name("pause.resume.topic")
+            .partitions(2)
+            .replicas(1)
+            .build();
+    }
+
+...........................
+
+
+
+
+  
+  

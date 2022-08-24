@@ -30,8 +30,6 @@ services:
     image: springrest
     environment:
       - KAFKA_IP_PORT=kafka:29092
-      - kafka_topic=dthpack
-      - partitions_count=10
     depends_on:
       - kafka
     ports:
@@ -40,13 +38,26 @@ services:
       context: "./springrest/"
       dockerfile: Dockerfile
   
+  subscribe:
+    image: subscribe
+    environment:
+      - KAFKA_IP_PORT=kafka:29092
+    depends_on:
+      - kafka
+    ports:
+      - "8082:8082"
+    build:
+      context: "./subscribe/"
+      dockerfile: Dockerfile
+  
   notifications:
     image: notifications
     environment:
       - KAFKA_IP_PORT=kafka:29092
-      - kafka_topic=dthpack
     depends_on:
       - kafka
+    ports:
+      - "8081:8081"
     build:
       context: "./notifications/"
       dockerfile: Dockerfile

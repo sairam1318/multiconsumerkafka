@@ -1,5 +1,6 @@
 package com.consumer.subscribe;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -8,6 +9,9 @@ import org.springframework.stereotype.Component;
 public class TopicConsumer {
 	
 	private KafkaTemplate<String, String> kafkaTemplate;
+
+	@Autowired
+	KafkaTopicNameProvider kafkaTopicNameProvider;
 		
 
 	public TopicConsumer(KafkaTemplate<String, String> kafkaTemplate) {
@@ -16,15 +20,18 @@ public class TopicConsumer {
 	}
 	// subscribe
 
-	@KafkaListener(topics = "subscribe", groupId = "groupid")
-	void listener(String data) {
-      System.out.println("Hi, " + data + " processing payment of Rs.500 ");
+	@KafkaListener(topics = "#{kafkaTopicNameProvider.provideName()}", groupId = "groupid")
+	void listener(String data) throws InterruptedException {
+      System.out.println( data);
       sendNotitfication();
     }
 
-	private void sendNotitfication() {
-		// send to subscribe topic .. will do it later...
-		kafkaTemplate.send("payment", "DTH subscription was successful..!");
+	private void sendNotitfication() throws InterruptedException {
+		Thread.sleep(10000);
+		String nextTopic = kafkaTopicNameProvider.getNextTopic();
+		if(nextTopic != null && nextTopic.length() > 0) {
+			kafkaTemplate.send(nextTopic, "next topic process...");
+		}
 		
 	}
 }

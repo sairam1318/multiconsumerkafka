@@ -1,0 +1,73 @@
+TOPICS:-
+	Consider an example of storage room with some x counters. if counterA has long queue, work will be shifted to counterB. Similarly.., Each topic will have some x partitions if specified where each work will be equally shared for each partition.
+	
+	Default retention period of topic msg is 7 days.
+
+PARTITIONS:-
+
+	-> Each partition in kafka can have max of 1 consumer.
+	-> Messages are stored in each partition in an order using offset.
+	-> order across partition is not gurenteed.
+	-> Each msg in partition has an offset started from 0.
+	-> 1 topic with 3 partitions will have:-
+		partition0, offset 0, 1, 2, 3
+		partition1, offset 0, 1, 2, 3
+		partition2, offset 0, 1, 2, 3
+	-> cannot delete existing partition.
+
+PRODUCERS/PUBLISHERS:-
+
+	-> by default, kafka will automatically select partition.
+	-> we can override as well...
+
+* consumers <= partitions
+* if consumers > partitions ? remaining consumers will be idle.
+* consumer groups:- 
+	->  lets say, if we have 2 consumers. one is dashboard and another is notifications group.
+	->  if both are referring to same topic, each consumer will receive same messages from the broker.
+	->  and lets say if we observer, dashboard consumer group is taking more time, then we can add multiple consumers and vice versa.
+
+
+// spring code to send to message to specific partition.
+	
+	if there are 5 partitions.
+
+	then => ` for(int i = 0; i < 100000: i++) {
+			String key = i % 5 + "-key";
+			producer.send(key, value);
+		}`	
+
+// multiple consumers.
+
+	if there are 3 partitions...
+
+	@kafkaListener(topics="", concurreny={no.of consumers required..}
+		i.e., we can process (assume concurreny = 2) 2 msgs per sec.
+	
+
+
+// REBALANCING:- 
+	
+	1. create a topic with 1 partition
+	2. modify the partition to may be 2.
+	3. this will modify the no.of partiotion but code will not go to 2nd partition. but after some time, 
+		will rebalance it and send to 2nd partition. this is called as rebalancing.
+
+// 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
