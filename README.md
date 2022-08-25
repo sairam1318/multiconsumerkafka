@@ -1,5 +1,7 @@
 # multiconsumerkafka
 
+ --- compile the applications 1st using ``mvn clean install -DskipTests ``
+
 ### use `` docker-compose up `` to run the application
 ### ignore subscibe application 
 
