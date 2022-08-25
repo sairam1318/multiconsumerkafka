@@ -19,6 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 
 import com.consumer.notifications.consumer.UserDetails;
+import com.consumer.notifications.consumer.UserDetailsDeSerializer;
 
 @Configuration
 @EnableKafka
@@ -36,22 +37,33 @@ public class ConsumerConfigurations {
         return new DefaultKafkaConsumerFactory<>(props);
     }
 	@Bean
-	public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> factory(ConsumerFactory<String, String> consumerFactory) {
+	public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> factory(ConsumerFactory<String, String> consumerFactory, KafkaTemplate<String, String> kafkaTemplate) {
 	    ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
 	    factory.setConsumerFactory(consumerFactory);
 	    return factory;
 	}
+	
+	@Bean
+    public ConsumerFactory<String, String> filterConsumerfactory() {
+		Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        // proper Deserializer is required for filtering..
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
 
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory<String, String>
-	  filterKafkaListenerContainerFactory() {
+	  filterKafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
 
 	    ConcurrentKafkaListenerContainerFactory<String, String> factory =
 	      new ConcurrentKafkaListenerContainerFactory<>();
-	    factory.setConsumerFactory(consumerFactory());
-	    factory.setAckDiscarded(true);
-//	    factory.setRecordFilterStrategy(
-//	      record -> record.value().contains("H"));
+	    factory.setConsumerFactory(filterConsumerfactory());
+	    factory.setAckDiscarded(true); // optional
+	    factory.setRecordFilterStrategy(
+	      record -> record.value().contains("H")); // to apply filter strategy
+	    factory.setReplyTemplate(kafkaTemplate); // to use return option..
 	    return factory;
 	}
 	
@@ -60,7 +72,7 @@ public class ConsumerConfigurations {
 //        Map<String, Object> props = new HashMap<>();
 //        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 //        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDetails.class);
+//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UserDetailsDeSerializer.class);
 //        return new DefaultKafkaConsumerFactory<>(props);
 //    }
 //	
@@ -71,7 +83,7 @@ public class ConsumerConfigurations {
 //        factory.setConsumerFactory(usersConsumerFactory());
 //        return factory;
 //    }
-	
-	 	
+//	
+//	 	
 
 }

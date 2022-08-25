@@ -167,7 +167,15 @@ class Listener implements ConsumerSeekAware {
 
 ...........................
 
+An acknowledgement (ACK) is a sign transmitted between communication networks to indicate acknowledgement which means reception of the message transmitted successfully. 
 
+
+Acks=0:- Once the ack value is set to 0, the producer will not wait for an acknowledgement from the broker. 
+		So we don’t have any assurance that the broker has received the message successfully or The producer is not trying to send the message again as it won’t realize the record has been lost, so there are chances of data loss.
+Acks=1:- When the ack value is set to 1, the producer gets an acknowledgement after the record has been received by the It will reply without waiting for all followers for a complete acknowledgement. 
+		The message will only be lost if the leader fails directly after noticing the record even before the followers have replicated it. There is partial data loss.
+Acks=all:- When we set the ack value to all, it ensures that when all in-sync replicas get the data, the producer gets a The leader must wait to accept the record with the full set of in-sync replicas. 
+		This implies that sending a message with acks=all; takes a long time, but it does provide the best durability of the message, which means no data loss
 
 
   
