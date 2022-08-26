@@ -42,12 +42,11 @@ public class TopicBuilderConfig {
         
 //        AdminClient client = AdminClient.create(admin.getConfigurationProperties());
         
-
-        return TopicBuilder.name(kafkaTopic).partitions(count).build();
+        return TopicBuilder.name(kafkaTopic).partitions(10).build();
     }
     
-    @Bean
-    public NewTopic processTopic() {
-    	return TopicBuilder.name("process").partitions(1).config(TopicConfig.CLEANUP_POLICY_DELETE, "true").build();
-    }
+//    @Bean
+//    public NewTopic processTopic() {
+//    	return TopicBuilder.name("process").partitions(1).config(TopicConfig.CLEANUP_POLICY_DELETE, "true").build();
+//    }
 }

@@ -34,6 +34,7 @@ public class ConsumerConfigurations {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ConsumerConfig.METADATA_MAX_AGE_CONFIG, 2000);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 	@Bean
@@ -60,6 +61,7 @@ public class ConsumerConfigurations {
 	    ConcurrentKafkaListenerContainerFactory<String, String> factory =
 	      new ConcurrentKafkaListenerContainerFactory<>();
 	    factory.setConsumerFactory(filterConsumerfactory());
+	  
 	    factory.setAckDiscarded(true); // optional
 	    factory.setRecordFilterStrategy(
 	      record -> record.value().contains("H")); // to apply filter strategy

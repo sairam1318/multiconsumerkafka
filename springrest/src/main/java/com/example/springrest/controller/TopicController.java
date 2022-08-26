@@ -40,8 +40,8 @@ public class TopicController {
 	
 	@PostMapping("/sendMessge")
 	public void sendMessageToTopic(@RequestBody TopicMessage msg) throws InterruptedException {
-		for(int counter = 0; counter < 100; counter ++ ) {
-			topicProducer.sendMessage(msg.getMessage() + " ( " + counter + " )");
+		for(int counter = 0; counter < 20000; counter ++ ) {
+			topicProducer.sendMessage(msg.getMessage() + " [ " + counter + " ]");
 		}
 		
 	}

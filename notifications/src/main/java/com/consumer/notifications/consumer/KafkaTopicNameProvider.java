@@ -10,6 +10,7 @@ public class KafkaTopicNameProvider {
     private String kafkaTopic;
 
     public String provideName() {
+    	System.out.println(kafkaTopic + " kafka topic name ");
         return kafkaTopic;
     }
 

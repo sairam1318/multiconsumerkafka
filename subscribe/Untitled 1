@@ -1,0 +1,5 @@
+
+Theory:- 
+	1. We have 2 consumers and a topic with 10 partiton's.
+	2. We are sending 200 message's. which means, 100 messages to consumer-1, 100 messages to consumer-2.
+	3. Important note here is that, we have wait for a while for re balancing...

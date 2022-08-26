@@ -20,27 +20,29 @@ public class TopicProducer {
 	
 	
 	public void sendMessage(String message) {
-		ListenableFuture<SendResult<String, String>> future =  kafkaTemplate.send(kafkaTopic, message);
-		
-		
-		// Non Blocking...
-		future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-
-			@Override
-			public void onSuccess(SendResult<String, String> result) {
-				// TODO Auto-generated method stub
-				System.out.println("Success..." + result.getRecordMetadata().topic());
-				
-			}
-
-			@Override
-			public void onFailure(Throwable ex) {
-				// TODO Auto-generated method stub
-				System.out.println("failure while t/f msgs" + ex.getMessage());
-			}
-			
-		});
-		
+//		ListenableFuture<SendResult<String, String>> future =  kafkaTemplate.send(kafkaTopic, message);
+//		
+//		
+//		// Non Blocking...
+//		future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+//
+//			@Override
+//			public void onSuccess(SendResult<String, String> result) {
+//				// TODO Auto-generated method stub
+////				System.out.println("Success..." + result.getRecordMetadata().topic());
+//				
+//			}
+//
+//			@Override
+//			public void onFailure(Throwable ex) {
+//				// TODO Auto-generated method stub
+////				System.out.println("failure while t/f msgs" + ex.getMessage());
+//			}
+//			
+//		});
+//		
+//	}
+		kafkaTemplate.send(kafkaTopic, message);
 	}
 
 }
