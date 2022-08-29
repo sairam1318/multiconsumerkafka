@@ -41,6 +41,7 @@ public class TopicBuilderConfig {
         int count = Integer.parseInt(partitionsCount);
         
 //        AdminClient client = AdminClient.create(admin.getConfigurationProperties());
+        // replicas <= no.of brokers...
         
         return TopicBuilder.name(kafkaTopic).partitions(10).build();
     }

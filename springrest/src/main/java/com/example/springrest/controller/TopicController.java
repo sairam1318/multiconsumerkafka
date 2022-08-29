@@ -1,6 +1,7 @@
 package com.example.springrest.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +28,12 @@ class TopicMessage {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "{ \"message\" : \"" + message + "\" }";
+	}
+
 }
 
 @RestController
@@ -38,11 +43,14 @@ public class TopicController {
 	@Autowired
 	TopicProducer topicProducer;
 	
+	
 	@PostMapping("/sendMessge")
 	public void sendMessageToTopic(@RequestBody TopicMessage msg) throws InterruptedException {
-		for(int counter = 0; counter < 20000; counter ++ ) {
-			topicProducer.sendMessage(msg.getMessage() + " [ " + counter + " ]");
+		for(int counter = 0; counter < 20; counter ++ ) {
+			
+			// here 10 is no.of partitions.
+			topicProducer.sendMessage(msg.toString() + " [ " + counter + " ]", counter % 10);
+			Thread.sleep(100);
 		}
-		
 	}
 }

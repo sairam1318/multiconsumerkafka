@@ -1,0 +1,22 @@
+##
+partions > consumers :
+	consumers/partions will be shared by each consmers.
+
+partitions < consumers:
+	extra consumer will be idle.
+
+partions == consumers:
+	each consumer will have each partition.
+
+
+ ==> to do those load balancing, some time will be taken by cluster.
+
+## 
+
+	replicas == no.of copies of messages of topic each consumer to hold.
+
+	replicas has to be equal to no.of brokers.
+
+
+
+

@@ -16,10 +16,11 @@ public class TopicProducer {
 	
 	@Autowired
 	private KafkaTemplate<String,String> kafkaTemplate;
+	
 
 	
 	
-	public void sendMessage(String message) {
+	public void sendMessage(String message, int partition) {
 //		ListenableFuture<SendResult<String, String>> future =  kafkaTemplate.send(kafkaTopic, message);
 //		
 //		
@@ -42,7 +43,10 @@ public class TopicProducer {
 //		});
 //		
 //	}
-		kafkaTemplate.send(kafkaTopic, message);
+		// to specific partiton..
+		kafkaTemplate.send(kafkaTopic, partition, null, message);
+
 	}
+	
 
 }

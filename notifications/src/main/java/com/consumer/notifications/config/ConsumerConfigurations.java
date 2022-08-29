@@ -48,7 +48,7 @@ public class ConsumerConfigurations {
     public ConsumerFactory<String, String> filterConsumerfactory() {
 		Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        // proper Deserializer is required for filtering..
+        // proper De serializer is required for filtering..
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);
@@ -56,7 +56,7 @@ public class ConsumerConfigurations {
 
 	@Bean
 	public ConcurrentKafkaListenerContainerFactory<String, String>
-	  filterKafkaListenerContainerFactory(KafkaTemplate<String, String> kafkaTemplate) {
+	  filterKafkaListenerContainerFactory(KafkaTemplate<String, TopicMessage> kafkaTemplate) {
 
 	    ConcurrentKafkaListenerContainerFactory<String, String> factory =
 	      new ConcurrentKafkaListenerContainerFactory<>();
@@ -85,7 +85,6 @@ public class ConsumerConfigurations {
 //        factory.setConsumerFactory(usersConsumerFactory());
 //        return factory;
 //    }
-//	
-//	 	
+//
 
 }
